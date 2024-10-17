@@ -16,15 +16,15 @@ Khi bạn bắt đầu chạy ứng dụng, form chọn "Who are you?" sẽ hi�
 
 **Chức năng đối với Server
 1. Bắt đầu stream (truyền dữ liệu cho Client)
-  Sau khi bạn đã chọn bạn chính là server, form server sẽ hiển thị (hiện tại chương trình rất đơn giản ở phía server) chỉ có một hoạt động là stream (truyền dữ liệu cho client)
+- Sau khi bạn đã chọn bạn chính là server, form server sẽ hiển thị (hiện tại chương trình rất đơn giản ở phía server) chỉ có một hoạt động là stream (truyền dữ liệu cho client)
 Sau khi đã thành công vào form, hãy nhấn nút "Bắt đầu stream", camera và microphone sẽ bắt đầu nhận và bắt đầu truyền dữ liệu đến với client.
 **Chức năng đối với Client
 1. Kết nối với server
-  Sau khi bạn đã chọn vai trò của mình là client, màn hình form client sẽ hiển thị và bước 1 này cũng chính là bước QUAN TRỌNG cho các bước sau. Trước khi có thể xem được stream từ phía server, bạn phải nhập địa chỉ IP của server sau đó nhấn nút OK. Nếu hiển thị "Kết nối đến server thành công" thì bạn đã thành công, còn nếu không hãy xem lại địa chỉ IP bạn đã nhập
+- Sau khi bạn đã chọn vai trò của mình là client, màn hình form client sẽ hiển thị và bước 1 này cũng chính là bước QUAN TRỌNG cho các bước sau. Trước khi có thể xem được stream từ phía server, bạn phải nhập địa chỉ IP của server sau đó nhấn nút OK. Nếu hiển thị "Kết nối đến server thành công" thì bạn đã thành công, còn nếu không hãy xem lại địa chỉ IP bạn đã nhập
 2. Bắt đầu xem stream
-   Sau khi đã kết nối đến server thành công, bạn hãy nhấn nút "Bắt đầu xem", client sẽ bắt đầu nhận dữ liệu truyền đến từ server (màn hình stream và âm thanh).
+- Sau khi đã kết nối đến server thành công, bạn hãy nhấn nút "Bắt đầu xem", client sẽ bắt đầu nhận dữ liệu truyền đến từ server (màn hình stream và âm thanh).
 3. Chỉnh âm lượng
-   Sau khi đã hoàn thành chức năng 1 và chức năng 2, chức năng điều chỉnh âm lượng là tùy chọn, bạn có thể kéo thả để tùy chọn âm lượng mình muốn (lớn hay nhỏ).
+- Sau khi đã hoàn thành chức năng 1 và chức năng 2, chức năng điều chỉnh âm lượng là tùy chọn, bạn có thể kéo thả để tùy chọn âm lượng mình muốn (lớn hay nhỏ).
 
 Hiện tại, chương trình vẫn còn đơn giản và nhiều lỗi chưa chỉnh sửa, mong các bạn thông cảm, sẽ sớm khắc phục về các đoạn lỗi
 

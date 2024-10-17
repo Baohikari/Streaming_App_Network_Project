@@ -1,12 +1,12 @@
 # Streaming_App_Network_Project
 """
 Trước khi sử dụng chương trình về đề tài "Xây dựng ứng dụng streaming" thì cần có các yêu cầu sau:
-*Visual Studio 2022: đều có thể sử dụng được ở phiên bản Community hay Professional
-*.NET SDK: đảm bảo đã cài đặt .NET 8 SDK để biên dịch và chạy dự án.
-*Hệ điều hành Windows
+- Visual Studio 2022: đều có thể sử dụng được ở phiên bản Community hay Professional
+- .NET SDK: đảm bảo đã cài đặt .NET 8 SDK để biên dịch và chạy dự án.
+- Hệ điều hành Windows
 Sau đây là các thư viện cần thiết cho chương trình (nếu chưa được cài đặt, bạn có thể cài đặt qua NuGet trên Visual Studio
-*NAudio: thư viện dùng để xử lý âm thanh, ghi lại âm thanh từ server và phát lại audio trên client
-*AForge.Video và AForge.Video.DirectShow: các thư viện này dùng để xử lý video và kết nối với thiết bị camera
+- NAudio: thư viện dùng để xử lý âm thanh, ghi lại âm thanh từ server và phát lại audio trên client
+- AForge.Video và AForge.Video.DirectShow: các thư viện này dùng để xử lý video và kết nối với thiết bị camera
 Về môi trường: Thiết bị cần có microphone và camera để ứng dụng đầy đủ các chức năng của chương trình
 
 Chương trình sau đây sử dụng các kiến thức như: lập trình C# và .NET, lập trình mạng, multithreading.

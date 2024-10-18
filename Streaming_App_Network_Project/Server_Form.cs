@@ -1,17 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
+using System.Net;
+using System.Net.Sockets;
 using System.Windows.Forms;
 using NAudio.Wave;
 using AForge.Video;
 using AForge.Video.DirectShow;
-using System.Net.Sockets;
-using System.Net;
+
 namespace Streaming_App_Network_Project
 {
     public partial class Server_Form : Form
@@ -23,26 +19,28 @@ namespace Streaming_App_Network_Project
         private VideoCaptureDevice videoSource;
         private UdpClient udpServer;
         private IPEndPoint clientEndPoint;
+
         public Server_Form()
         {
-            IPAddress localAddress = GetLocalIPAddress(); //Hàm lấy địa chỉ IP
-            udpServer = new UdpClient();
-            udpAudioServer = new UdpClient();
-            clientEndPoint = new IPEndPoint(localAddress, 5000);
-            clientAudioEndPoint = new IPEndPoint(localAddress, 5001);
             InitializeComponent();
 
-            Console.WriteLine(localAddress.ToString());
+            IPAddress localAddress = GetLocalIPAddress(); // Lấy địa chỉ IP
+            udpServer = new UdpClient(); // UDP cho video
+            udpAudioServer = new UdpClient(); // UDP cho âm thanh
+
+            clientEndPoint = new IPEndPoint(localAddress, 5000); // Điểm cuối cho video
+            clientAudioEndPoint = new IPEndPoint(localAddress, 5001); // Điểm cuối cho âm thanh
         }
 
         private void start_streaming_btn_Click(object sender, EventArgs e)
         {
+            // Khởi động microphone
             waveIn = new WaveInEvent();
             waveIn.WaveFormat = new WaveFormat(44100, 1);
             waveIn.DataAvailable += WaveIn_DataAvailable;
             waveIn.StartRecording();
 
-
+            // Khởi động camera
             videoDevices = new FilterInfoCollection(FilterCategory.VideoInputDevice);
             if (videoDevices.Count > 0)
             {
@@ -59,26 +57,7 @@ namespace Streaming_App_Network_Project
         private void WaveIn_DataAvailable(object sender, WaveInEventArgs e)
         {
             byte[] audioData = e.Buffer;
-
             udpAudioServer.Send(audioData, audioData.Length, clientAudioEndPoint);
-        }
-
-        private void FormServer_FormClosing(object sender, FormClosingEventArgs e)
-        {
-
-            //Stop Video
-            if (videoSource != null && videoSource.IsRunning)
-            {
-                videoSource.SignalToStop();
-                videoSource.WaitForStop();
-            }
-
-            //Stop audio
-            if (waveIn != null)
-            {
-                waveIn.StopRecording();
-                waveIn.Dispose();
-            }
         }
 
         private void videoSource_NewFrame(object sender, NewFrameEventArgs e)
@@ -86,11 +65,12 @@ namespace Streaming_App_Network_Project
             Bitmap bitmap = (Bitmap)e.Frame.Clone();
 
             // Chuyển đổi hình ảnh thành byte[]
-            using (var ms = new System.IO.MemoryStream())
+            using (var ms = new MemoryStream())
             {
                 bitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
                 byte[] data = ms.ToArray();
-                //Chia nhỏ dữ liệu (do báo lỗi của chương trình trước đó)
+
+                // Chia nhỏ dữ liệu (để tránh lỗi do kích thước gói lớn)
                 const int maxUdpPacketSize = 65000;
                 for (int offset = 0; offset < data.Length; offset += maxUdpPacketSize)
                 {
@@ -99,14 +79,12 @@ namespace Streaming_App_Network_Project
                     Array.Copy(data, offset, packet, 0, size);
                     udpServer.Send(packet, packet.Length, clientEndPoint);
                 }
-
-                // Gửi dữ liệu qua UDP
-                //udpServer.Send(data, data.Length, clientEndPoint);
             }
 
             // Hiển thị video lên PictureBox
             streaming_screen.Image = bitmap;
         }
+
         private IPAddress GetLocalIPAddress()
         {
             var networkInterfaces = System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces();
@@ -126,6 +104,23 @@ namespace Streaming_App_Network_Project
                 }
             }
             throw new Exception("Không tìm thấy địa chỉ IP Wi-Fi.");
+        }
+
+        private void FormServer_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // Dừng camera
+            if (videoSource != null && videoSource.IsRunning)
+            {
+                videoSource.SignalToStop();
+                videoSource.WaitForStop();
+            }
+
+            // Dừng microphone
+            if (waveIn != null)
+            {
+                waveIn.StopRecording();
+                waveIn.Dispose();
+            }
         }
     }
 }

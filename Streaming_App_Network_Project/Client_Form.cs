@@ -24,7 +24,7 @@ namespace Streaming_App_Network_Project
         private bool isStreaming = false;
         private Thread videoThread;
         private Thread audioThread;
-        
+
         public Client_Form()
         {
             InitializeComponent();
@@ -32,10 +32,6 @@ namespace Streaming_App_Network_Project
             udpAudioClient = new UdpClient(5001); //Audio port
         }
 
-        private void label1_Click(object sender, EventArgs e)
-        {
-
-        }
 
         private void start_btn_Click(object sender, EventArgs e)
         {
@@ -44,7 +40,20 @@ namespace Streaming_App_Network_Project
                 MessageBox.Show("Bạn cần kết nối tới server trước.");
                 return;
             }
+
+            if (isStreaming)
+            {
+                MessageBox.Show("Stream đã đang chạy.");
+                return;
+            }
+
             isStreaming = true;
+
+            // Khởi tạo lại đối tượng WaveOut cho âm thanh mới
+            waveProvider = new BufferedWaveProvider(new WaveFormat(8000, 16, 1));
+            waveOut = new WaveOut();
+            waveOut.Init(waveProvider);
+            waveOut.Play();
 
             //Bắt đầu nhận video
             videoThread = new Thread(ReceiveVideo);
@@ -101,19 +110,25 @@ namespace Streaming_App_Network_Project
         }
         private void stop_btn_Click(object sender, EventArgs e)
         {
+            if (!isStreaming)
+            {
+                MessageBox.Show("Stream đã dừng.");
+                return;
+            }
+
             isStreaming = false;
 
-            // Dừng các thread
-            if (videoThread != null && videoThread.IsAlive)
-                videoThread.Abort();
-            if (audioThread != null && audioThread.IsAlive)
-                audioThread.Abort();
+            // Đợi các thread hoàn thành
+            videoThread?.Join();
+            audioThread?.Join();
 
-            waveOut.Stop();
+            waveOut?.Stop();
+            waveOut?.Dispose();
+
             MessageBox.Show("Dừng stream.");
         }
 
-private void connectButton_Click(object sender, EventArgs e)
+        private void connectButton_Click(object sender, EventArgs e)
         {
             string serverIP = serverIpTextBox.Text.Trim();
             if (string.IsNullOrEmpty(serverIP))
@@ -121,25 +136,34 @@ private void connectButton_Click(object sender, EventArgs e)
                 MessageBox.Show("Vui lòng nhập địa chỉ IP của server.");
                 return;
             }
+
+            // Kiểm tra định dạng địa chỉ IP
+            if (!IPAddress.TryParse(serverIP, out IPAddress ipAddress))
+            {
+                MessageBox.Show("Địa chỉ IP không hợp lệ. Vui lòng nhập đúng định dạng.");
+                return;
+            }
+
             try
             {
-                // Kết nối với server thông qua địa chỉ IP
-                UdpClient = new UdpClient();
-                UdpClient.Connect(serverIP, 5000); // Kết nối cho video
+                // Kết nối với server cho video nếu chưa kết nối
+                if (!isConnected)
+                {
+                    UdpClient.Connect(serverIP, 5000); // Kết nối cho video
+                    udpAudioClient.Connect(serverIP, 5001); // Kết nối cho audio
 
-                udpAudioClient = new UdpClient();
-                udpAudioClient.Connect(serverIP, 5001); // Kết nối cho audio
-
-                isConnected = true;
-                MessageBox.Show("Kết nối thành công tới server.");
-
-                // Gửi địa chỉ IP của client tới server (nếu cần)
-                byte[] clientIPBytes = Encoding.UTF8.GetBytes(Dns.GetHostAddresses(Dns.GetHostName())[0].ToString());
-                UdpClient.Send(clientIPBytes, clientIPBytes.Length);
+                    isConnected = true;
+                    MessageBox.Show("Kết nối thành công tới server.");
+                }
+                else
+                {
+                    MessageBox.Show("Đã kết nối tới server.");
+                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Không thể kết nối tới server: {ex.Message}");
+                isConnected = false; // Cập nhật lại trạng thái nếu không thể kết nối
             }
         }
 
@@ -147,6 +171,11 @@ private void connectButton_Click(object sender, EventArgs e)
         {
             float volume = trackBar1.Value / 100.0f;
             waveOut.Volume = volume;
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

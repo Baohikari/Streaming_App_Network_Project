@@ -152,18 +152,41 @@ namespace Streaming_App_Network_Project
                     UdpClient.Connect(serverIP, 5000); // Kết nối cho video
                     udpAudioClient.Connect(serverIP, 5001); // Kết nối cho audio
 
-                    isConnected = true;
-                    MessageBox.Show("Kết nối thành công tới server.");
+                    // Gửi gói tin "Ping" để kiểm tra kết nối
+                    UdpClient testConnection = new UdpClient();
+                    byte[] pingMessage = Encoding.ASCII.GetBytes("Ping");
+                    testConnection.Send(pingMessage, pingMessage.Length, serverIP, 5002);
+
+                    // Nhận phản hồi từ server
+                    IPEndPoint remoteEP = new IPEndPoint(IPAddress.Any, 0);
+                    testConnection.Client.ReceiveTimeout = 3000; // Thời gian chờ là 3 giây
+                    byte[] response = testConnection.Receive(ref remoteEP);
+                    string responseMessage = Encoding.ASCII.GetString(response);
+
+                    if (responseMessage == "Pong")
+                    {
+                        isConnected = true;
+                        MessageBox.Show("Kết nối thành công tới server.");
+                    }
+                    else
+                    {
+                        MessageBox.Show("Phản hồi từ server không chính xác.");
+                    }
                 }
                 else
                 {
                     MessageBox.Show("Đã kết nối tới server.");
                 }
             }
+            catch (SocketException)
+            {
+                MessageBox.Show("Không thể kết nối tới server. Vui lòng kiểm tra lại.");
+                isConnected = false;
+            }
             catch (Exception ex)
             {
-                MessageBox.Show($"Không thể kết nối tới server: {ex.Message}");
-                isConnected = false; // Cập nhật lại trạng thái nếu không thể kết nối
+                MessageBox.Show($"Lỗi khi kết nối tới server: {ex.Message}");
+                isConnected = false;
             }
         }
 

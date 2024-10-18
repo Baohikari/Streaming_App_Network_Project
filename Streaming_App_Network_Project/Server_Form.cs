@@ -7,6 +7,8 @@ using System.Windows.Forms;
 using NAudio.Wave;
 using AForge.Video;
 using AForge.Video.DirectShow;
+using System.Threading;
+using System.Text;
 
 namespace Streaming_App_Network_Project
 {
@@ -19,7 +21,7 @@ namespace Streaming_App_Network_Project
         private VideoCaptureDevice videoSource;
         private UdpClient udpServer;
         private IPEndPoint clientEndPoint;
-
+        private Thread connectionListenerThread;
         public Server_Form()
         {
             InitializeComponent();
@@ -30,6 +32,12 @@ namespace Streaming_App_Network_Project
 
             clientEndPoint = new IPEndPoint(localAddress, 5000); // Điểm cuối cho video
             clientAudioEndPoint = new IPEndPoint(localAddress, 5001); // Điểm cuối cho âm thanh
+
+            // Khởi động thread lắng nghe kết nối
+            connectionListenerThread = new Thread(ListenForConnections);
+            connectionListenerThread.Start();
+
+            Console.WriteLine(localAddress.ToString());
         }
 
         private void start_streaming_btn_Click(object sender, EventArgs e)
@@ -121,6 +129,37 @@ namespace Streaming_App_Network_Project
                 waveIn.StopRecording();
                 waveIn.Dispose();
             }
+
+            //Dừng lắng nghe kết nối
+            connectionListenerThread?.Abort();
         }
+
+        private void ListenForConnections()
+        {
+            UdpClient connectionListener = new UdpClient(5002); // Cổng dành riêng cho kiểm tra kết nối
+            IPEndPoint remoteEP = new IPEndPoint(IPAddress.Any, 0);
+
+            while (true)
+            {
+                try
+                {
+                    // Nhận dữ liệu từ client
+                    byte[] receivedData = connectionListener.Receive(ref remoteEP);
+                    string message = Encoding.ASCII.GetString(receivedData);
+
+                    if (message == "Ping")
+                    {
+                        // Phản hồi lại "Pong" để xác nhận kết nối
+                        byte[] responseData = Encoding.ASCII.GetBytes("Pong");
+                        connectionListener.Send(responseData, responseData.Length, remoteEP);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Lỗi khi lắng nghe kết nối: {ex.Message}");
+                }
+            }
+        }
+
     }
 }
